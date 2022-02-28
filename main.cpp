@@ -120,7 +120,7 @@ MandelbrotSection loadMandelbrotSection(std::ifstream &in){
     while(!in.eof()){
         in >> s;
         if(s == "_"){ break; }
-        if(readingData){
+        if(readingData && s[0] != ']'){
             std::vector<bool> data;
             for(auto c : s){
                 data.push_back(c == '1' ? 1 : 0);
@@ -243,14 +243,13 @@ int main(){
     MandelbrotSection m;
     m.start.real(0);
     m.start.imag(0);
-    m.step = 0.03;
+    m.step = 0.027;
     m.iterations = 255;
-    double dIn;
     std::string op;
     bool quit = false;
     std::string fileName;
     do{
-        op = menuWithCheck({{"p", "Set Point"}, {"z", "Set Zoom"}, {"i", "Set iterations"}, {"s", "Save"}, {"l", "Load"}, {"lg", "Load Group"}, {"d", "Display"}, {"di", "Display Info"}, {"q", "Quit"}});
+        op = menuWithCheck({{"p", "Set Point"}, {"z", "Set Zoom"}, {"i", "Set iterations"}, {"s", "Save"}, {"l", "Load"}, {"lg", "Load Group"}, {"d", "Display"}, {"di", "Display Info"}, {"dr", "Display Without Computing"}, {"q", "Quit"}});
         if(op == "p"){
             m.start.real(promptWithCheck("Enter real: "));
             m.start.imag(promptWithCheck("Enter imaginary: "));
@@ -302,6 +301,9 @@ int main(){
             std::cout << "Step: " << m.step << '\n';
             
             std::cout << "Iter: " << m.iterations << '\n';
+        }
+        else if(op == "dr"){
+            printMandelWithXY(m);
         }
         else if(op == "q"){
             quit = true;
