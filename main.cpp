@@ -2,6 +2,7 @@
 #include <complex>
 #include <vector>
 #include <sstream>
+#include <fstream>
 
 bool isInMandelbrotSet(const std::complex<double> &c, const unsigned int iterations){
     std::complex<double> z(0, 0);
@@ -21,46 +22,18 @@ struct MandelbrotSection{
     unsigned int iterations;
 };
 
-MandelbrotSection makeMandelbrot(double start, double end, double step, unsigned int iters){
-    MandelbrotSection m;
-    for(double imag = start; imag < end; imag += step){
+void makeMandelbrot(MandelbrotSection &m, unsigned int rSteps, unsigned int iSteps){
+    m.raw.clear();
+    double iSize = iSteps * m.step;
+    double rSize = rSteps * m.step;
+    for(double i = m.start.imag() - iSize; i <= m.start.imag() + iSize; i += m.step){
         std::vector<bool> v;
-        for(double real = start; real < end; real += step){
-            v.push_back(isInMandelbrotSet(real, imag, iters));
-        }
-        m.raw.push_back(v);
-    }
-    return m;
-}
-
-MandelbrotSection makeMandelbrot(double real, double imag, double rSize, double iSize, double step, unsigned int iters){
-    MandelbrotSection m;
-    for(double i = imag + iSize; i > imag - iSize; i -= step){
-        std::vector<bool> v;
-        for(double r = real - rSize; r < real + rSize; r += step){
-            //std::cout << i << ", " << r << '\n';
-            bool b = isInMandelbrotSet(r, i, iters);
-            //std::cout << r << ", " << i << "i " << (b ? "IN\n" : "OUT\n");
-            v.push_back(b);
-        }
-        m.raw.push_back(v);
-    }
-    return m;
-}
-
-MandelbrotSection makeMandelbrot(double real, double imag, double step, unsigned int rSteps, unsigned int iSteps, unsigned int iterations){
-    MandelbrotSection m;
-    double iSize = iSteps * step;
-    double rSize = rSteps * step;
-    for(double i = imag - iSize; i <= imag + iSize; i += step){
-        std::vector<bool> v;
-        for(double r = real - rSize; r <= real + rSize; r += step){
+        for(double r = m.start.real() - rSize; r <= m.start.real() + rSize; r += m.step){
             //std::cout << r << ", " << i << '\n';
-            v.push_back(isInMandelbrotSet(r, i, iterations));
+            v.push_back(isInMandelbrotSet(r, i, m.iterations));
         }
         m.raw.push_back(v);
-    }
-    return m;    
+    }  
 }
 
 void printMandel(const MandelbrotSection &m){
@@ -73,142 +46,269 @@ void printMandel(const MandelbrotSection &m){
 }
 
 
-
+//.38016, .36
 void printMandelWithXY(const MandelbrotSection &m){
-    std::cout << "^\n" << (m.raw.size() * m.step) << '\n';
+    if(m.raw.size() == 0){ return; }
+    
+    int realSize = m.raw[0].size();
+    double realLength = realSize/2 * m.step;
+    double imagLength = m.raw.size()/2 * m.step;
+    std::cout << "^\n" << (m.start.imag() + imagLength) << '\n';
+    
     std::stringstream ss;
-    ss << m.start.imag();
+    ss << (m.start.imag() - imagLength);
     std::string imagStr = ss.str();
-    ss.ignore();
-    ss << (m.start.real() + (m.raw[0].size() * m.step));
+    
+    ss.clear();
+    ss.str(std::string());
+    ss << (m.start.real() - realLength);
     std::string realStr = ss.str();
+    
+    int k = 0;
     for(int i = 0; i < m.raw.size(); i++){
-        std::cout << '|';
-        for(int j = 0; j < m.raw[i].size(); j++){
-            std::cout << (m.raw[i][j] ? '*' : ' ');
+        if(i >= m.raw.size() - imagStr.size()){
+            std::cout << imagStr[k++];
+        }
+        else{ std::cout << '|'; }
+        for(int j = 0; j < realSize; j++){
+            if(i == m.raw.size()/2 && j == realSize/2){ std::cout << '\\'; }
+            else{ std::cout << (m.raw[i][j] ? '*' : ' '); }
         }
         std::cout << '\n';
     }
-    ss.ignore();
+
     std::cout << '=' << realStr;
-    for(int i = m.raw[0].size() - realStr.size(); i > 0; i--){
+    
+    for(int i = realSize - realStr.size() - 1; i > 0; i--){
         std::cout << '-';
     }
-    std::cout << '\n';
+    
+    std::cout << (m.start.real() + realLength) << '\n';
 }
 
+void saveMandelbrotSection(const MandelbrotSection &m, const std::string &fileName){
+    std::ofstream out;
+    out.open(fileName, std::ios::app);
+    if(!out.is_open()){ 
+        std::cerr << "saveMandelbrotSection: Unable to open " << fileName << " for saving\n"; 
+        return;
+    }
+    out << "!\n";
+    out << 'r' << m.start.real() << '\n';
+    out << 'i' << m.start.imag() << '\n';
+    out << 's' << m.step << '\n';
+    out << 't' << m.iterations << '\n';
+    out << "[\n";
+    for(auto &v : m.raw){
+        for(auto b : v){
+            out << b ? '1' : '0';
+        }
+        out << '\n';
+    }
+    out << "]\n_\n";
+    out.close();
+}
+
+MandelbrotSection loadMandelbrotSection(std::ifstream &in){
+    MandelbrotSection m;
+    if(!in.is_open()){ 
+        std::cerr << "loadMandelbrotSection: Unable to open file for loading\n"; 
+        return m;
+    }
+    std::string s;
+    bool readingData = false;
+    while(!in.eof()){
+        in >> s;
+        if(s == "_"){ break; }
+        if(readingData){
+            std::vector<bool> data;
+            for(auto c : s){
+                data.push_back(c == '1' ? 1 : 0);
+            }
+            m.raw.push_back(data);
+        }
+        switch(s[0]){
+            case 'r':
+                m.start.real(std::stod(s.substr(1)));
+                break;
+            case 'i':
+                m.start.imag(std::stod(s.substr(1)));
+                break;
+            case 's':
+                m.step = std::stod(s.substr(1));
+                break;
+            case 't':
+                m.iterations = std::stoi(s.substr(1));
+                break;
+            case '[':
+                readingData = true;
+                break;
+            case ']':
+                readingData = false;
+                break;
+        }
+    }
+    return m;
+}
+
+MandelbrotSection loadMandelbrotSection(const std::string &fileName){
+    std::ifstream in(fileName);
+    auto m = loadMandelbrotSection(in);
+    in.close();
+    return m;
+}
+
+std::vector<MandelbrotSection> readAnimationFile(const std::string &fileName){
+    std::vector<MandelbrotSection> v;
+    std::ifstream in(fileName);
+    while(!in.eof()){
+        v.push_back(loadMandelbrotSection(in));
+    }
+    in.close();
+    return v;
+}
+
+// std::vector<std::vector<bool> > raw;
+//    std::complex<double> start;
+//    double step;
+//    unsigned int iterations;
 //TODO
 //Add input validation
-//Add save/load system
+//
+
+bool isDouble(const std::string &str){
+    bool decimalFound = false;
+    for(int i = 0; i < str.size(); i++){
+        char c = str[i];
+        if(!std::isdigit(c)){
+            if(c == '-' && i > 0){ return false; }
+            if(c == '.'){
+                if(decimalFound){ return false; }
+                decimalFound = true;
+            }
+            else{ return false; }
+        }
+    }
+    return true;
+}
+
+bool inRange(std::string d, double min, double max){ 
+    if(!isDouble(d)){ return false; }
+    double du = std::stod(d);
+    return du >= min && du <= max;
+}
+
+double promptWithCheck(const std::string &prompt, double min = -100, double max = 100){
+    std::cout << prompt;
+    std::string in;
+    std::cin >> in;
+    while(!inRange(in, min, max)){
+        std::cout << "Input was not a double between " << min << " and " << max << '\n';
+        std::cout << prompt;
+        std::cin >> in;
+    }
+    return std::stod(in);
+}
+
+bool validMenuOption(const std::vector<std::pair<std::string, std::string>> &v, const std::string &in){
+    for(auto &op : v){
+        if(op.first == in){ return true; }
+    }
+    return false;
+}
+
+std::string menuWithCheck(const std::vector<std::pair<std::string, std::string>> &v){
+    std::cout << "Select Option:\n";
+    for(auto &op : v){
+        std::cout << '\t' << op.first << " = " << op.second << '\n';
+    }
+    std::cout << "> ";
+    std::string in;
+    std::cin >> in;
+    while(!validMenuOption(v, in)){
+        std::cout << "\nInvalid Choice\nSelect Option:\n";
+        for(auto &op : v){
+            std::cout << '\t' << op.first << " = " << op.second << '\n';
+        }
+        std::cout << "> ";
+        std::cin >> in;
+    }
+    return in;
+}
 
 int main(){
     unsigned int iters = 255;
     const unsigned int STEPS_X = 125, STEPS_Y = 35;
     //i.32, r.37
-    while(1){
-        std::cout << "Select mode[p/s/o]: ";
-        char mode = 0;
-        std::cin >> mode;
-        MandelbrotSection m;
-        double start, end, step;
-        double i, r, rS, iS;
-        double dIn;
-        switch(mode){
-            case 's':
-                std::cout << "Enter start: ";
-                std::cin >> start;
-                std::cout << "Enter end: ";
-                std::cin >> end;
-                std::cout << "Enter step: ";
-                std::cin >> step;
-                std::cout << "Enter iterations: ";
-                std::cin >> iters;
-                m = makeMandelbrot(start, end, step, iters);
-                break;
-            case 'p':
-                std::cout << "Enter Real: ";
-                std::cin >> r;
-                std::cout << "Enter imaginary: ";
-                std::cin >> i;
-                std::cout << "Enter Step: ";
-                std::cin >> step;
-                std::cout << "Enter Real Size: ";
-                std::cin >> rS;
-                std::cout << "Enter Imaginary Size: ";
-                std::cin >> iS;
-                std::cout << "Enter Iterations: ";
-                std::cin >> iters;
-                m = makeMandelbrot(r, i, rS, iS, step, iters);
-                break;
-            case 'o':
-                std::cout << "Enter real: ";
-                std::cin >> r;
-                std::cout << "Enter imag: ";
-                std::cin >> i;
-                std::cout << r << ", " << i << "i " << (isInMandelbrotSet(r, i, iters) ? "IN" : "OUT");
-                break;
-            case 'l':
-                char op;
-                bool quit = false;
-                std::cout << "Enter real: ";
-                std::cin >> dIn;
-                m.start.real();
-                std::cout << "Enter imaginary: ";
-                std::cin >> dIn;
-                m.start.imag();
-                std::cout << "Enter step size: ";
-                std::cin >> m.step;
-                std::cout << "Enter iterations: ";
-                std::cin >> m.iterations;
-                do{
-                    std::cout << "Select option:\n";
-                    std::cout << "\t 1. Set Point\n";
-                    std::cout << "\t 2. Set Zoom\n";
-                    std::cout << "\t 3. Set iterations\n";
-                    std::cout << " Type 'd' to display with current settings\n";
-                    std::cout << " Type 'q' to exit\n";
-                    std::cout << "Selection: ";
-                    std::cin >> op;
-                    switch(op){
-                        case('1'):
-                            std::cout << "Enter real: ";
-                            std::cin >> dIn;
-                            m.start.real(dIn);
-                            std::cout << "Enter imaginary: ";
-                            std::cin >> dIn;
-                            m.start.imag(dIn);
-                            break;
-                        case('2'):
-                            std::cout << "Enter step size: ";
-                            std::cin >> dIn;
-                            m.step = dIn;
-                            break;
-                        case('3'):
-                            std::cout << "Enter iterations: ";
-                            std::cin >> dIn;
-                            m.iterations = dIn;
-                            break;
-                        case('d'):
-                            std::cout << "Real(x): " << r - (STEPS_X * step) << " < " << r << " > " << r + (STEPS_X * step) << '\n';
-                            std::cout << "Imag(y): " << i - (STEPS_Y * step) << " < " << i << " > " << i + (STEPS_Y * step) << '\n';
-                            std::cout << "Step: " << step << '\n';
-                            std::cout << "Iter: " << iters << '\n';
-                            m.raw = makeMandelbrot(m.start.real(), m.start.imag(), m.step, STEPS_X, STEPS_Y, m.iterations).raw;
-                            printMandelWithXY(m);
-                            break;
-                        case('q'):
-                            quit = true;
-                            break;
-                        default:
-                            std::cout << "Invalid option\n";
-                            break;
-                    }
-                }while(!quit);
-                break;
+    MandelbrotSection m;
+    m.start.real(0);
+    m.start.imag(0);
+    m.step = 0.03;
+    m.iterations = 255;
+    double dIn;
+    std::string op;
+    bool quit = false;
+    std::string fileName;
+    do{
+        op = menuWithCheck({{"p", "Set Point"}, {"z", "Set Zoom"}, {"i", "Set iterations"}, {"s", "Save"}, {"l", "Load"}, {"lg", "Load Group"}, {"d", "Display"}, {"di", "Display Info"}, {"q", "Quit"}});
+        if(op == "p"){
+            m.start.real(promptWithCheck("Enter real: "));
+            m.start.imag(promptWithCheck("Enter imaginary: "));
         }
-        printMandel(m);
-        std::cout << "\n\n";
-    }
-    std::getchar();
-    std::getchar();
+        else if(op == "z"){
+            m.step = promptWithCheck("Enter step size: ");
+        }
+        else if(op == "i"){
+            m.iterations = promptWithCheck("Enter iterations: ", 0, 10000000);
+        }
+        else if(op == "s"){
+            std::cout << "Enter Filename: ";
+            std::cin >> fileName;
+            saveMandelbrotSection(m, fileName);
+            std::cout << "Saved to " << fileName << "\n\n";
+        }
+        else if(op == "l"){
+            std::cout << "Enter Filename: ";
+            std::cin >> fileName;
+            m = loadMandelbrotSection(fileName);
+            std::cout << "Loaded from " << fileName << "\n\n";
+        }
+        else if(op == "lg"){
+            std::cout << "Enter Filename: ";
+            std::cin >> fileName;
+            auto anim = readAnimationFile(fileName);
+        }
+        else if(op == "d"){
+            std::cout << "Real(x): " << m.start.real() - (STEPS_X * m.step) << " < " << m.start.real() << " > " << 
+                                        m.start.real() + (STEPS_X * m.step) << '\n';
+            
+            std::cout << "Imag(y): " << m.start.imag() - (STEPS_Y * m.step) << " < " << m.start.imag() << " > " << 
+                                        m.start.imag() + (STEPS_Y * m.step) << '\n';
+            
+            std::cout << "Step: " << m.step << '\n';
+            
+            std::cout << "Iter: " << m.iterations << '\n';
+            
+            makeMandelbrot(m, STEPS_X, STEPS_Y);
+            printMandelWithXY(m);
+        }
+        else if(op == "di"){
+            std::cout << "Real(x): " << m.start.real() - (STEPS_X * m.step) << " < " << m.start.real() << " > " << 
+                                        m.start.real() + (STEPS_X * m.step) << '\n';
+            
+            std::cout << "Imag(y): " << m.start.imag() - (STEPS_Y * m.step) << " < " << m.start.imag() << " > " << 
+                                        m.start.imag() + (STEPS_Y * m.step) << '\n';
+            
+            std::cout << "Step: " << m.step << '\n';
+            
+            std::cout << "Iter: " << m.iterations << '\n';
+        }
+        else if(op == "q"){
+            quit = true;
+        }
+        else{
+            std::cout << "Invalid option\n";
+        }
+        std::cout << '\n';
+    }while(!quit);
 }
