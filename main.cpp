@@ -4,6 +4,8 @@
 #include <sstream>
 #include <fstream>
 
+const unsigned int STEPS_X = 125, STEPS_Y = 35;
+
 bool isInMandelbrotSet(const std::complex<double> &c, const unsigned int iterations){
     std::complex<double> z(0, 0);
     for(unsigned int i = 0; i < iterations; i++){
@@ -80,7 +82,7 @@ void printMandelWithXY(const MandelbrotSection &m){
     std::cout << '=' << realStr;
     
     for(int i = realSize - realStr.size() - 1; i > 0; i--){
-        std::cout << '-';
+        std::cout << '=';
     }
     
     std::cout << (m.start.real() + realLength) << '\n';
@@ -181,8 +183,10 @@ bool isDouble(const std::string &str){
     for(int i = 0; i < str.size(); i++){
         char c = str[i];
         if(!std::isdigit(c)){
-            if(c == '-' && i > 0){ return false; }
-            if(c == '.'){
+            if(c == '-'){ 
+                if(i > 0){ return false; }
+            }
+            else if(c == '.'){
                 if(decimalFound){ return false; }
                 decimalFound = true;
             }
@@ -236,20 +240,39 @@ std::string menuWithCheck(const std::vector<std::pair<std::string, std::string>>
     return in;
 }
 
+void makeAnimation(MandelbrotSection m, double zoomStep, unsigned int zooms, const std::string &fileName){
+    for(unsigned int i = 0; i < zooms; i++){
+        m.step = i * zoomStep;
+        makeMandelbrot(m, STEPS_X, STEPS_Y);
+        saveMandelbrotSection(m, fileName);
+    }
+}
+
+void playAnimation(const std::string &fileName){
+    std::ifstream in(fileName);
+    if(!in.is_open()){
+        std::cerr << "playAnimation: Can't open " << fileName << " for playback\n";
+        return;
+    }
+    while(!in.eof()){
+        printMandelWithXY(loadMandelbrotSection(in));
+    }
+}
+
 int main(){
     unsigned int iters = 255;
-    const unsigned int STEPS_X = 125, STEPS_Y = 35;
     //i.32, r.37
     MandelbrotSection m;
-    m.start.real(0);
+    m = loadMandelbrotSection("saves/def.txt");
+    /*m.start.real(0);
     m.start.imag(0);
     m.step = 0.027;
-    m.iterations = 255;
+    m.iterations = 255;*/
     std::string op;
     bool quit = false;
     std::string fileName;
     do{
-        op = menuWithCheck({{"p", "Set Point"}, {"z", "Set Zoom"}, {"i", "Set iterations"}, {"s", "Save"}, {"l", "Load"}, {"lg", "Load Group"}, {"d", "Display"}, {"di", "Display Info"}, {"dr", "Display Without Computing"}, {"q", "Quit"}});
+        op = menuWithCheck({{"p", "Set Point"}, {"z", "Set Zoom"}, {"i", "Set iterations"}, {"s", "Save"}, {"l", "Load"}, {"la", "Load Animation"}, {"a", "Make Animation"}, {"d", "Display"}, {"di", "Display Info"}, {"dr", "Display Without Computing"}, {"q", "Quit"}});
         if(op == "p"){
             m.start.real(promptWithCheck("Enter real: "));
             m.start.imag(promptWithCheck("Enter imaginary: "));
@@ -272,10 +295,30 @@ int main(){
             m = loadMandelbrotSection(fileName);
             std::cout << "Loaded from " << fileName << "\n\n";
         }
-        else if(op == "lg"){
+        else if(op == "la"){
             std::cout << "Enter Filename: ";
             std::cin >> fileName;
-            auto anim = readAnimationFile(fileName);
+            std::getchar();
+            std::ifstream in(fileName);
+            if(!in.is_open()){
+                std::cerr << "Error opening " << fileName << '\n';
+                break;
+            }
+            do{
+                m = loadMandelbrotSection(in);
+                if(m.raw.size() == 0){ break; }
+                printMandelWithXY(m);
+                std::cout << "Enter anything to proceed...";
+                std::string garbo;
+                std::getline(std::cin, garbo);
+            }while(!in.eof());
+        }
+        else if(op == "a"){
+            double zStep = promptWithCheck("Enter Zoom Step: ");
+            double nSteps = promptWithCheck("Enter Number of Steps: ");
+            std::cout << "Enter Filename: ";
+            std::cin >> fileName;
+            makeAnimation(m, zStep, nSteps, fileName);
         }
         else if(op == "d"){
             std::cout << "Real(x): " << m.start.real() - (STEPS_X * m.step) << " < " << m.start.real() << " > " << 
