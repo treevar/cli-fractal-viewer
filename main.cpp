@@ -12,6 +12,11 @@ std::string getNextLine(){
     return str;
 }
 
+void pause(){
+    std::cout << "Press Enter to Continue...";
+    getNextLine();
+}
+
 bool isInMandelbrotSet(const std::complex<double> &c, const unsigned int iterations){
     std::complex<double> z(0, 0);
     for(unsigned int i = 0; i < iterations; i++){
@@ -91,7 +96,7 @@ void printMandelWithXY(const MandelbrotSection &m){
         std::cout << '=';
     }
     
-    std::cout << (m.start.real() + realLength) << '\n';
+    std::cout << (m.start.real() + realLength) << ">\n";
 }
 
 void saveMandelbrotSection(const MandelbrotSection &m, const std::string &fileName){
@@ -306,18 +311,17 @@ int main(){
         else if(op == "la"){
             std::cout << "Enter Filename: ";
             fileName = getNextLine();
-            std::getchar();
             std::ifstream in(fileName);
             if(!in.is_open()){
                 std::cerr << "Error opening " << fileName << '\n';
                 break;
             }
             do{
-                m = loadMandelbrotSection(in);
-                if(m.raw.size() == 0){ break; }
+                MandelbrotSection man = loadMandelbrotSection(in);
+                if(man.raw.size() == 0){ break; }
+                m = man;
                 printMandelWithXY(m);
-                std::cout << "Enter anything to proceed...";
-                getNextLine();
+                pause();
             }while(!in.eof());
         }
         else if(op == "a"){
