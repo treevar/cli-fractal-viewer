@@ -6,6 +6,12 @@
 
 const unsigned int STEPS_X = 125, STEPS_Y = 35;
 
+std::string getNextLine(){
+    std::string str;
+    std::getline(std::cin, str);
+    return str;
+}
+
 bool isInMandelbrotSet(const std::complex<double> &c, const unsigned int iterations){
     std::complex<double> z(0, 0);
     for(unsigned int i = 0; i < iterations; i++){
@@ -28,7 +34,7 @@ void makeMandelbrot(MandelbrotSection &m, unsigned int rSteps, unsigned int iSte
     m.raw.clear();
     double iSize = iSteps * m.step;
     double rSize = rSteps * m.step;
-    for(double i = m.start.imag() - iSize; i <= m.start.imag() + iSize; i += m.step){
+    for(double i = m.start.imag() + iSize; i >= m.start.imag() - iSize; i -= m.step){
         std::vector<bool> v;
         for(double r = m.start.real() - rSize; r <= m.start.real() + rSize; r += m.step){
             //std::cout << r << ", " << i << '\n';
@@ -179,15 +185,17 @@ std::vector<MandelbrotSection> readAnimationFile(const std::string &fileName){
 //
 
 bool isDouble(const std::string &str){
+    if(str.size() == 0){ return false; }
+    if(str == "-."){ return false; }
     bool decimalFound = false;
     for(int i = 0; i < str.size(); i++){
         char c = str[i];
         if(!std::isdigit(c)){
             if(c == '-'){ 
-                if(i > 0){ return false; }
+                if(i > 0 || str.size() == 1){ return false; }
             }
             else if(c == '.'){
-                if(decimalFound){ return false; }
+                if(decimalFound || str.size() == 1){ return false; }
                 decimalFound = true;
             }
             else{ return false; }
@@ -204,12 +212,12 @@ bool inRange(std::string d, double min, double max){
 
 double promptWithCheck(const std::string &prompt, double min = -100, double max = 100){
     std::cout << prompt;
-    std::string in;
-    std::cin >> in;
+    std::string in = {""};
+    in = getNextLine();
     while(!inRange(in, min, max)){
         std::cout << "Input was not a double between " << min << " and " << max << '\n';
         std::cout << prompt;
-        std::cin >> in;
+        in = getNextLine();
     }
     return std::stod(in);
 }
@@ -227,15 +235,15 @@ std::string menuWithCheck(const std::vector<std::pair<std::string, std::string>>
         std::cout << '\t' << op.first << " = " << op.second << '\n';
     }
     std::cout << "> ";
-    std::string in;
-    std::cin >> in;
+    std::string in = {""};
+    in = getNextLine();
     while(!validMenuOption(v, in)){
         std::cout << "\nInvalid Choice\nSelect Option:\n";
         for(auto &op : v){
             std::cout << '\t' << op.first << " = " << op.second << '\n';
         }
         std::cout << "> ";
-        std::cin >> in;
+        in = getNextLine();
     }
     return in;
 }
@@ -285,19 +293,19 @@ int main(){
         }
         else if(op == "s"){
             std::cout << "Enter Filename: ";
-            std::cin >> fileName;
+            fileName = getNextLine();
             saveMandelbrotSection(m, fileName);
             std::cout << "Saved to " << fileName << "\n\n";
         }
         else if(op == "l"){
             std::cout << "Enter Filename: ";
-            std::cin >> fileName;
+            fileName = getNextLine();
             m = loadMandelbrotSection(fileName);
             std::cout << "Loaded from " << fileName << "\n\n";
         }
         else if(op == "la"){
             std::cout << "Enter Filename: ";
-            std::cin >> fileName;
+            fileName = getNextLine();
             std::getchar();
             std::ifstream in(fileName);
             if(!in.is_open()){
@@ -309,15 +317,14 @@ int main(){
                 if(m.raw.size() == 0){ break; }
                 printMandelWithXY(m);
                 std::cout << "Enter anything to proceed...";
-                std::string garbo;
-                std::getline(std::cin, garbo);
+                getNextLine();
             }while(!in.eof());
         }
         else if(op == "a"){
             double zStep = promptWithCheck("Enter Zoom Step: ");
             double nSteps = promptWithCheck("Enter Number of Steps: ");
             std::cout << "Enter Filename: ";
-            std::cin >> fileName;
+            fileName = getNextLine();
             makeAnimation(m, zStep, nSteps, fileName);
         }
         else if(op == "d"){
