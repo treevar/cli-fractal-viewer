@@ -6,13 +6,13 @@
 #include "inc/MandelbrotSection.hpp"
 #include "inc/Util.hpp"
 const unsigned int STEPS_X = 125, STEPS_Y = 35;
-const std::string DEFAULT_PATH {"saves/def.txt"}; 
+const std::string DEFAULT_SECTION {"def.txt"}; 
 
 int main(){
     unsigned int iters = 255;
     //i.32, r.37
     MandelbrotSection m;
-    m.load(DEFAULT_PATH);
+    m.load(DEFAULT_SECTION);
     /*m.start.real(0);
     m.start.imag(0);
     m.step = 0.027;
@@ -37,14 +37,14 @@ int main(){
             std::cout << "Enter Filename: ";
             fileName = Util::getNextLine();
             if(m.save(fileName)){
-                std::cout << "Saved to " << fileName << "\n\n";
+                std::cout << "Saved to " << m.getSavePath() << fileName << "\n\n";
             }
         }
         else if(op == "l"){
             std::cout << "Enter Filename: ";
             fileName = Util::getNextLine();
             if(m.load(fileName)){
-                std::cout << "Loaded from \"" << fileName << "\"\n\n";
+                std::cout << "Loaded from \"" << m.getSavePath() << fileName << "\"\n\n";
             }
             
         }
