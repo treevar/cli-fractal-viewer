@@ -31,15 +31,15 @@ std::ostream &operator<<(std::ostream &out, const MandelbrotSection &m){
     int realSize = m._raw[0].size();
     double realLength = realSize/2 * m._step;
     double imagLength = m._raw.size()/2 * m._step;
-    std::cout << "^\n" << (m._start.imag() + imagLength) << "i\n";
+    std::cout << "^\n" << Util::trimDouble(m._start.imag() + imagLength) << "i\n";
     
     std::stringstream ss;
-    ss << (m._start.imag() - imagLength) << 'i';
+    ss << Util::trimDouble(m._start.imag() - imagLength) << 'i';
     std::string imagStr = ss.str();
     
     ss.clear();
     ss.str(std::string());
-    ss << (m._start.real() - realLength);
+    ss << Util::trimDouble(m._start.real() - realLength);
     std::string realStr = ss.str();
     
     int k = 0;
@@ -61,7 +61,7 @@ std::ostream &operator<<(std::ostream &out, const MandelbrotSection &m){
         std::cout << '=';
     }
     
-    std::cout << (m._start.real() + realLength) << ">\n";
+    std::cout << Util::trimDouble(m._start.real() + realLength) << ">\n";
     return out;
 }
 
@@ -77,10 +77,10 @@ void MandelbrotSection::printInfo(std::ostream &out){
     out << "Iter: " << _iterations << '\n';
 }
 
-bool MandelbrotSection::save(const std::string &fileName){
-    std::ofstream out;
-    out.open(fileName, std::ios::app);
-    if(_logIf(!out.is_open(), std::cerr, "MandelbrotSection::save: Unable to open \"" + fileName + "\" for saving")){ 
+bool MandelbrotSection::save(const std::string &fileName, bool pathRelativeToSavePath){
+    std::string filePath = pathRelativeToSavePath ? _savePath + fileName : fileName;
+    std::ofstream out(filePath, std::ios::app);
+    if(_logIf(!out.is_open(), std::cerr, "MandelbrotSection::save: Unable to open \"" + filePath + "\" for saving")){ 
         return false;
     }
     out << std::setprecision(15);
@@ -89,10 +89,10 @@ bool MandelbrotSection::save(const std::string &fileName){
     out.close();
     return true;
 }
-bool MandelbrotSection::load(const std::string &fileName){
-    std::ifstream in;
-    in.open(fileName);
-    if(_logIf(!in.is_open(), std::cerr, "MandelbrotSection::load: Unable to open \"" + fileName + "\" for loading")){  
+bool MandelbrotSection::load(const std::string &fileName, bool pathRelativeToSavePath){
+    std::string filePath = pathRelativeToSavePath ? _savePath + fileName : fileName;
+    std::ifstream in(filePath);
+    if(_logIf(!in.is_open(), std::cerr, "MandelbrotSection::load: Unable to open \"" + filePath + "\" for loading")){  
         return false;
     }
 
@@ -104,9 +104,10 @@ bool MandelbrotSection::load(const std::string &fileName){
     return true;
 }
 
-bool MandelbrotSection::createAnimation(const std::vector<double> &steps, const std::string &fileName){
-    std::ofstream out(fileName, std::ios::app);
-    if(_logIf(!out.is_open(), std::cerr, "MandelbrotSection::createAnimation: Error opening \"" + fileName + "\"")){
+bool MandelbrotSection::createAnimation(const std::vector<double> &steps, const std::string &fileName, bool pathRelativeToSavePath){
+    std::string filePath = pathRelativeToSavePath ? _savePath + fileName : fileName;
+    std::ofstream out(filePath, std::ios::app);
+    if(_logIf(!out.is_open(), std::cerr, "MandelbrotSection::createAnimation: Error opening \"" + filePath + "\"")){
         return false;
     }
     std::cout << "Calculating: ";
@@ -121,10 +122,10 @@ bool MandelbrotSection::createAnimation(const std::vector<double> &steps, const 
     out.close();
     return true;
 }
-bool MandelbrotSection::loadAnimation(const std::string &fileName){
-    std::ifstream in;
-    in.open(fileName);
-    if(_logIf(!in.is_open(), std::cerr, "MandelbrotSection::loadAnimation: Unable to open \"" + fileName + "\" for loading")){  
+bool MandelbrotSection::loadAnimation(const std::string &fileName, bool pathRelativeToSavePath){
+    std::string filePath = pathRelativeToSavePath ? _savePath + fileName : fileName;
+    std::ifstream in(filePath);
+    if(_logIf(!in.is_open(), std::cerr, "MandelbrotSection::loadAnimation: Unable to open \"" + filePath + "\" for loading")){  
         return false;
     }
     bool reCalcBefore = _reCalcOnChange;
@@ -177,6 +178,7 @@ unsigned int MandelbrotSection::getRealSteps(){ return _stepsR; }
 unsigned int MandelbrotSection::getImagSteps(){ return _stepsI; }
 bool MandelbrotSection::getReCalcOnChange(){ return _reCalcOnChange; }
 bool MandelbrotSection::getLogging(){ return _logging; }
+std::string MandelbrotSection::getSavePath(){ return _savePath; }
 
 
 void MandelbrotSection::setReal(double r){
@@ -211,6 +213,7 @@ void MandelbrotSection::setImagSteps(unsigned int is){
 }
 void MandelbrotSection::setReCalcOnChange(bool re){ _reCalcOnChange = re; }
 void MandelbrotSection::setLogging(bool l){ _logging = l; }
+void MandelbrotSection::setSavePath(const std::string &s){ _savePath = s; }
 
 MandelbrotSection::~MandelbrotSection() = default;
 

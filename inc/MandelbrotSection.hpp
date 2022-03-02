@@ -20,11 +20,11 @@ class MandelbrotSection{
         
         void printInfo(std::ostream &out);
 
-        bool save(const std::string &fileName);
-        bool load(const std::string &fileName);
+        bool save(const std::string &fileName, bool pathRelativeToSavePath = true);
+        bool load(const std::string &fileName, bool pathRelativeToSavePath = true);
 
-        bool createAnimation(const std::vector<double> &steps, const std::string &fileName);
-        bool loadAnimation(const std::string &fileName);
+        bool createAnimation(const std::vector<double> &steps, const std::string &fileName, bool pathRelativeToSavePath = true);
+        bool loadAnimation(const std::string &fileName, bool pathRelativeToSavePath = true);
        
         void calculate();
 
@@ -41,6 +41,7 @@ class MandelbrotSection{
         unsigned int getImagSteps();
         bool getReCalcOnChange();
         bool getLogging();
+        std::string getSavePath();
 
         void setReal(double r);
         void setImag(double i);
@@ -51,6 +52,7 @@ class MandelbrotSection{
         void setImagSteps(unsigned int is);
         void setReCalcOnChange(bool re);
         void setLogging(bool l);
+        void setSavePath(const std::string &s);
 
        ~MandelbrotSection();
     private:
@@ -59,6 +61,7 @@ class MandelbrotSection{
         double _step = 0.03;
         unsigned int _iterations = 255, _stepsR = 125, _stepsI = 35;
         bool _reCalcOnChange = false, _logging = true;
+        std::string _savePath = "./saves/";
 
         void _save(std::ostream &out);
         bool _load(std::istream &in);
