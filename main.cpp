@@ -28,6 +28,8 @@ bool isInMandelbrotSet(const std::complex<double> &c, const unsigned int iterati
 
 bool isInMandelbrotSet(double real, double imag, unsigned int iterations){ return isInMandelbrotSet(std::complex<double>(real, imag), iterations); }
 
+//TODO
+//make into class, put all mandel functions in it
 struct MandelbrotSection{
     std::vector<std::vector<bool> > raw;
     std::complex<double> start;
@@ -66,10 +68,10 @@ void printMandelWithXY(const MandelbrotSection &m){
     int realSize = m.raw[0].size();
     double realLength = realSize/2 * m.step;
     double imagLength = m.raw.size()/2 * m.step;
-    std::cout << "^\n" << (m.start.imag() + imagLength) << '\n';
+    std::cout << "^\n" << (m.start.imag() + imagLength) << "i\n";
     
     std::stringstream ss;
-    ss << (m.start.imag() - imagLength);
+    ss << (m.start.imag() - imagLength) << 'i';
     std::string imagStr = ss.str();
     
     ss.clear();
