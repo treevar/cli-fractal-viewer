@@ -112,14 +112,14 @@ bool MandelbrotSection::createAnimation(const std::vector<double> &steps, const 
         return false;
     }
     std::cout << "Calculating: ";
-    Util::printLoadBar(std::cout, 0, steps.size());
+    Util::printProgressBar(std::cout, 0, steps.size());
     for(size_t i = 0; i < steps.size(); i++){
-        Util::setLoadBar(std::cout, i, steps.size());
+        Util::setProgressBar(std::cout, i, steps.size());
         _step = steps[i];
         calculate();
         _save(out);
     }
-    Util::setLoadBar(std::cout, steps.size(), steps.size());
+    Util::setProgressBar(std::cout, steps.size(), steps.size());
     out.close();
     return true;
 }
