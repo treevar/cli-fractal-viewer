@@ -29,7 +29,7 @@ std::ostream &operator<<(std::ostream &out, const MandelbrotSection &m){
     if(m._raw.size() == 0){ return out; }
     
     int realSize = m._raw[0].size();
-    double realLength = realSize/2 * m._step;
+    double realLength = realSize/2 * (m._step * m._realStepMult);
     double imagLength = m._raw.size()/2 * m._step;
     std::cout << "^\n" << Util::trimDouble(m._start.imag() + imagLength) << "i\n";
     
@@ -72,19 +72,19 @@ void MandelbrotSection::printInfo(std::ostream &out){
     out << "Imag(y): " << Util::trimDouble(_start.imag() - (_stepsI * _step)) << " < " << Util::trimDouble(_start.imag()) << 
     " > " << Util::trimDouble(_start.imag() + (_stepsI * _step)) << '\n';
     
-    out << "Step: " << Util::trimDouble(_step) << '\n';
+    out << "Real Step: " << Util::trimDouble(_step * _realStepMult) << '\n';
+
+    out << "Imag Step: " << Util::trimDouble(_step) << '\n';
     
     out << "Iter: " << _iterations << '\n';
 }
 
-bool MandelbrotSection::save(const std::string &fileName, bool pathRelativeToSavePath){
+bool MandelbrotSection::save(const std::string &fileName, bool pathRelativeToSavePath, std::ios::openmode om){
     std::string filePath = pathRelativeToSavePath ? _savePath + fileName : fileName;
-    std::ofstream out(filePath, std::ios::app);
+    std::ofstream out(filePath, om);
     if(_logIf(!out.is_open(), std::cerr, "MandelbrotSection::save: Unable to open \"" + filePath + "\" for saving")){ 
         return false;
     }
-    out << std::setprecision(15);
-    out.unsetf(std::ios_base::floatfield);
     _save(out);
     out.close();
     return true;
@@ -145,10 +145,11 @@ bool MandelbrotSection::loadAnimation(const std::string &fileName, bool pathRela
 void MandelbrotSection::calculate(){
     _raw.clear();
     double iSize = _stepsI * _step;
-    double rSize = _stepsR * _step;
+    double rStep = _step * _realStepMult;
+    double rSize = _stepsR * rStep;
     for(double i = _start.imag() + iSize; i >= _start.imag() - iSize; i -= _step){
         std::vector<bool> v;
-        for(double r = _start.real() - rSize; r <= _start.real() + rSize; r += _step){
+        for(double r = _start.real() - rSize; r <= _start.real() + rSize; r += rStep){
             //std::cout << r << ", " << i << '\n';
             v.push_back(isInMandelbrotSet(r, i, _iterations));
         }
@@ -179,6 +180,7 @@ unsigned int MandelbrotSection::getImagSteps(){ return _stepsI; }
 bool MandelbrotSection::getReCalcOnChange(){ return _reCalcOnChange; }
 bool MandelbrotSection::getLogging(){ return _logging; }
 std::string MandelbrotSection::getSavePath(){ return _savePath; }
+double MandelbrotSection::getRealStepMult(){ return _realStepMult; }
 
 
 void MandelbrotSection::setReal(double r){
@@ -214,16 +216,16 @@ void MandelbrotSection::setImagSteps(unsigned int is){
 void MandelbrotSection::setReCalcOnChange(bool re){ _reCalcOnChange = re; }
 void MandelbrotSection::setLogging(bool l){ _logging = l; }
 void MandelbrotSection::setSavePath(const std::string &s){ _savePath = s; }
+void MandelbrotSection::setRealStepMult(double r){ _realStepMult = r; }
 
 MandelbrotSection::~MandelbrotSection() = default;
 
-void MandelbrotSection::_save(std::ostream &out){
-    out << std::setprecision(15);
-    out.unsetf(std::ios_base::floatfield);  
+void MandelbrotSection::_save(std::ostream &out){;  
     out << "!\n";
     out << 'r' << Util::trimDouble(_start.real()) << '\n';
     out << 'i' << Util::trimDouble(_start.imag()) << '\n';
-    out << 's' << Util::trimDouble(_step) << '\n';
+    out << "sr" << Util::trimDouble(_realStepMult) << '\n';
+    out << "si" << Util::trimDouble(_step) << '\n';
     out << 't' << _iterations << '\n';
     out << "[\n";
     for(auto &v : _raw){
@@ -267,7 +269,17 @@ bool MandelbrotSection::_load(std::istream &in){
                 _start.imag(std::stod(s.substr(1)));
                 break;
             case 's':
-                _step = std::stod(s.substr(1));
+                switch(s[1]){
+                    case 'r':
+                        _realStepMult = std::stod(s.substr(2));
+                        break;
+                    case 'i':
+                        _step = std::stod(s.substr(2));
+                        break;
+                    default:
+                        _realStepMult = 1;
+                        _step = std::stod(s.substr(1));
+                }
                 break;
             case 't':
                 _iterations = std::stoi(s.substr(1));

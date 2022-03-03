@@ -20,7 +20,7 @@ class MandelbrotSection{
         
         void printInfo(std::ostream &out);
 
-        bool save(const std::string &fileName, bool pathRelativeToSavePath = true);
+        bool save(const std::string &fileName, bool pathRelativeToSavePath = true, std::ios::openmode om = std::ios::app);
         bool load(const std::string &fileName, bool pathRelativeToSavePath = true);
 
         bool createAnimation(const std::vector<double> &steps, const std::string &fileName, bool pathRelativeToSavePath = true);
@@ -42,6 +42,7 @@ class MandelbrotSection{
         bool getReCalcOnChange();
         bool getLogging();
         std::string getSavePath();
+        double getRealStepMult();
 
         void setReal(double r);
         void setImag(double i);
@@ -53,12 +54,13 @@ class MandelbrotSection{
         void setReCalcOnChange(bool re);
         void setLogging(bool l);
         void setSavePath(const std::string &s);
+        void setRealStepMult(double r);
 
        ~MandelbrotSection();
     private:
         RawData _raw;
         Point _start = {0, 0};
-        double _step = 0.03;
+        double _step = 0.03, _realStepMult = 0.5;
         unsigned int _iterations = 255, _stepsR = 125, _stepsI = 35;
         bool _reCalcOnChange = false, _logging = true;
         std::string _savePath = "./saves/";

@@ -22,7 +22,10 @@ int main(){
     std::string fileName;
     std::cout.precision(15);
     do{
-        op = Util::menuWithCheck({{"p", "Set Point"}, {"z", "Set Zoom"}, {"i", "Set iterations"}, {"s", "Save"}, {"l", "Load"}, {"la", "Load Animation"}, {"a", "Make Animation"}, {"d", "Display"}, {"di", "Display Info"}, {"dr", "Display Without Computing"}, {"q", "Quit"}});
+        op = Util::menuWithCheck({{"p", "Set Point"}, {"z", "Set Zoom"}, {"i", "Set iterations"}, {"rm", "Set Real Step Mult"}, 
+                                {"s", "Save"}, {"so", "Save and Overwrite"}, {"l", "Load"}, {"la", "Load Animation"}, 
+                                {"a", "Make Animation"}, {"d", "Display"}, {"di", "Display Info"}, 
+                                {"dr", "Display Without Computing"}, {"q", "Quit"}});
         if(op == "p"){
             m.setReal(Util::promptWithCheck("Enter real: "));
             m.setImag(Util::promptWithCheck("Enter imaginary: "));
@@ -40,6 +43,13 @@ int main(){
                 std::cout << "Saved to " << m.getSavePath() << fileName << "\n\n";
             }
         }
+        else if(op == "so"){
+            std::cout << "Enter Filename: ";
+            fileName = Util::getNextLine();
+            if(m.save(fileName, true, std::ios::trunc)){
+                std::cout << "Saved to " << m.getSavePath() << fileName << "\n\n";
+            }
+        }
         else if(op == "l"){
             std::cout << "Enter Filename: ";
             fileName = Util::getNextLine();
@@ -47,6 +57,9 @@ int main(){
                 std::cout << "Loaded from \"" << m.getSavePath() << fileName << "\"\n\n";
             }
             
+        }
+        else if(op == "rm"){
+            m.setRealStepMult(Util::promptWithCheck("Enter Real Step Multiplier: "));
         }
         else if(op == "la"){
             std::cout << "Enter Filename: ";
