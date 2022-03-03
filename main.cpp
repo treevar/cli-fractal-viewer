@@ -1,3 +1,8 @@
+/****Copyright (C) 2022  eggplantcx
+ **main.cpp
+ **Full License can be found in LICENSE or <https://www.gnu.org/licenses/gpl-3.0.html>
+ */
+
 #include <iostream>
 #include <complex>
 #include <vector>

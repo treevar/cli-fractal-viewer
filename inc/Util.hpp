@@ -1,3 +1,7 @@
+/****Copyright (C) 2022  eggplantcx
+ **Util.hpp
+ **Full License can be found in LICENSE or <https://www.gnu.org/licenses/gpl-3.0.html>
+ */
 #ifndef UTIL_HPP
 #define UTIL_HPP
 #include <string>

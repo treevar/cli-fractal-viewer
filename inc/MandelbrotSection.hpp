@@ -1,3 +1,7 @@
+/****Copyright (C) 2022  eggplantcx
+ **MandelbrotSection.hpp
+ **Full License can be found in LICENSE or <https://www.gnu.org/licenses/gpl-3.0.html>
+ */
 #ifndef MANDELBROT_SECTION_HPP
 #define MANDELBROT_SECTION_HPP
 #include <complex>
