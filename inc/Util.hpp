@@ -22,8 +22,13 @@ namespace Util{
 
     void pause();
 
-    void printLoadBar(std::ostream &out, unsigned int done, unsigned int total);
-    void setLoadBar(std::ostream &out, unsigned int done, unsigned int total);
+    void printProgressBar(std::ostream &out, unsigned int done, unsigned int total);
+    void setProgressBar(std::ostream &out, unsigned int done, unsigned int total);
+    void clearProgressBar(std::ostream &out, unsigned int done, unsigned int total);
+
+    void printProgressCounter(std::ostream &out, unsigned int done, unsigned int total);
+    void setProgressCounter(std::ostream &out, unsigned int done, unsigned int total);
+    void clearProgressCounter(std::ostream &out, unsigned int done, unsigned int total);
 
     std::string trimDouble(double d, std::streamsize precision = 15);
 

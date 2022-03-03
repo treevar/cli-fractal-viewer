@@ -90,7 +90,7 @@ void Util::pause(){
     getNextLine();
 }
 
-void Util::printLoadBar(std::ostream &out, unsigned int done, unsigned int total){
+void Util::printProgressBar(std::ostream &out, unsigned int done, unsigned int total){
     out << '[';
     for(unsigned int i = 0; i < done; i++){
         out << '*';
@@ -98,14 +98,47 @@ void Util::printLoadBar(std::ostream &out, unsigned int done, unsigned int total
     for(unsigned int i = 0; i < total - done; i++){
         out << '_';
     }
-    out << ']';    
+    out << "] " << done << '/' << total;    
 }
 
-void Util::setLoadBar(std::ostream &out, unsigned int done, unsigned int total){
-    for(unsigned int i = 0; i < total + 2; i++){
+void Util::setProgressBar(std::ostream &out, unsigned int done, unsigned int total){
+    clearProgressBar(out, done, total);
+    printProgressBar(out, done, total);
+}
+
+void Util::clearProgressBar(std::ostream &out, unsigned int done, unsigned int total){
+    std::stringstream ss;
+    ss << done;
+    int totalLength = 4 + total + ss.str().length();//4 for [ ]/
+    ss.clear();
+    ss.str(std::string());
+    ss << total;
+    totalLength += ss.str().length();
+    for(unsigned int i = 0; i < totalLength; i++){
+        out << '\b';
+    }    
+}
+
+void Util::printProgressCounter(std::ostream &out, unsigned int done, unsigned int total){
+    out << done << '/' << total;    
+}
+
+void Util::clearProgressCounter(std::ostream &out, unsigned int done, unsigned int total){
+    std::stringstream ss;
+    ss << done;
+    int totalLength = 1 + ss.str().length();//1 for /
+    ss.clear();
+    ss.str(std::string());
+    ss << total;
+    totalLength += ss.str().length();
+    for(int i = 0; i < totalLength; i++){
         out << '\b';
     }
-    printLoadBar(out, done, total);
+}
+
+void Util::setProgressCounter(std::ostream &out, unsigned int done, unsigned int total){
+    clearProgressCounter(out, done, total);
+    printProgressCounter(out, done, total);
 }
 
 std::string Util::trimDouble(double d, std::streamsize precision){
