@@ -43,6 +43,7 @@ class MandelbrotSection{
         bool getLogging();
         std::string getSavePath();
         double getRealStepMult();
+        std::streamsize getPrecision();
 
         void setReal(double r);
         void setImag(double i);
@@ -55,6 +56,7 @@ class MandelbrotSection{
         void setLogging(bool l);
         void setSavePath(const std::string &s);
         void setRealStepMult(double r);
+        void setPrecision(std::streamsize p);
 
        ~MandelbrotSection();
     private:
@@ -64,6 +66,7 @@ class MandelbrotSection{
         unsigned int _iterations = 255, _stepsR = 125, _stepsI = 35;
         bool _reCalcOnChange = false, _logging = true;
         std::string _savePath = "./saves/";
+        std::streamsize _precision = 15;
 
         void _save(std::ostream &out);
         bool _load(std::istream &in);

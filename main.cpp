@@ -23,9 +23,9 @@ int main(){
     std::cout.precision(15);
     do{
         op = Util::menuWithCheck({{"p", "Set Point"}, {"z", "Set Zoom"}, {"i", "Set iterations"}, {"rm", "Set Real Step Mult"}, 
-                                {"s", "Save"}, {"so", "Save and Overwrite"}, {"l", "Load"}, {"la", "Load Animation"}, 
-                                {"a", "Make Animation"}, {"d", "Display"}, {"di", "Display Info"}, 
-                                {"dr", "Display Without Computing"}, {"q", "Quit"}});
+                                {"pr", "Set Precision of Floating Point Numbers"}, {"s", "Save"}, {"so", "Save and Overwrite"}, 
+                                {"l", "Load"}, {"la", "Load Animation"}, {"a", "Make Animation"}, {"d", "Display"}, 
+                                {"di", "Display Info"}, {"dr", "Display Without Computing"}, {"q", "Quit"}});
         if(op == "p"){
             m.setReal(Util::promptWithCheck("Enter real: "));
             m.setImag(Util::promptWithCheck("Enter imaginary: "));
@@ -42,6 +42,9 @@ int main(){
             if(m.save(fileName)){
                 std::cout << "Saved to " << m.getSavePath() << fileName << "\n\n";
             }
+        }
+        else if(op == "pr"){
+            m.setPrecision(Util::promptWithCheck("Enter Precision: ", 1, 1000));
         }
         else if(op == "so"){
             std::cout << "Enter Filename: ";

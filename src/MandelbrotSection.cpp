@@ -31,15 +31,15 @@ std::ostream &operator<<(std::ostream &out, const MandelbrotSection &m){
     int realSize = m._raw[0].size();
     double realLength = realSize/2 * (m._step * m._realStepMult);
     double imagLength = m._raw.size()/2 * m._step;
-    std::cout << "^\n" << Util::trimDouble(m._start.imag() + imagLength) << "i\n";
+    std::cout << "^\n" << Util::trimDouble(m._start.imag() + imagLength, m._precision) << "i\n";
     
     std::stringstream ss;
-    ss << Util::trimDouble(m._start.imag() - imagLength) << 'i';
+    ss << Util::trimDouble(m._start.imag() - imagLength, m._precision) << 'i';
     std::string imagStr = ss.str();
     
     ss.clear();
     ss.str(std::string());
-    ss << Util::trimDouble(m._start.real() - realLength);
+    ss << Util::trimDouble(m._start.real() - realLength, m._precision);
     std::string realStr = ss.str();
     
     int k = 0;
@@ -61,20 +61,21 @@ std::ostream &operator<<(std::ostream &out, const MandelbrotSection &m){
         std::cout << '=';
     }
     
-    std::cout << Util::trimDouble(m._start.real() + realLength) << ">\n";
+    std::cout << Util::trimDouble(m._start.real() + realLength, m._precision) << ">\n";
     return out;
 }
 
 void MandelbrotSection::printInfo(std::ostream &out){
-    out << "Real(x): " << Util::trimDouble(_start.real() - (_stepsR * _step)) << " < " << Util::trimDouble(_start.real()) << 
-        " > " << Util::trimDouble(_start.real() + (_stepsR * _step)) << '\n';
+    out << "Real(x): " << Util::trimDouble(_start.real() - (_stepsR * _step), _precision) << " < " << 
+    Util::trimDouble(_start.real(), _precision) << " > " << Util::trimDouble(_start.real() + (_stepsR * _step), _precision) << '\n';
     
-    out << "Imag(y): " << Util::trimDouble(_start.imag() - (_stepsI * _step)) << " < " << Util::trimDouble(_start.imag()) << 
-    " > " << Util::trimDouble(_start.imag() + (_stepsI * _step)) << '\n';
+    out << "Imag(y): " << Util::trimDouble(_start.imag() - (_stepsI * _step), _precision) << " < " << 
+    Util::trimDouble(_start.imag(), _precision) << " > " << Util::trimDouble(_start.imag() + (_stepsI * _step), _precision) << '\n';
     
-    out << "Real Step: " << Util::trimDouble(_step * _realStepMult) << " (" << _realStepMult << "x)\n";
+    out << "Real Step: " << Util::trimDouble(_step * _realStepMult, _precision) << " (" << 
+    Util::trimDouble(_realStepMult, _precision) << "x)\n";
 
-    out << "Imag Step: " << Util::trimDouble(_step) << '\n';
+    out << "Imag Step: " << Util::trimDouble(_step, _precision) << '\n';
     
     out << "Iter: " << _iterations << '\n';
 }
@@ -133,7 +134,7 @@ bool MandelbrotSection::loadAnimation(const std::string &fileName, bool pathRela
     while(!in.eof()){
         bool result = _load(in);
         if(!result){ break; }
-        std::cout << "Step: " << Util::trimDouble(_step) << '\n';
+        std::cout << "Step: " << Util::trimDouble(_step, _precision) << '\n';
         std::cout << *this;
         Util::pause();
     }
@@ -181,6 +182,7 @@ bool MandelbrotSection::getReCalcOnChange(){ return _reCalcOnChange; }
 bool MandelbrotSection::getLogging(){ return _logging; }
 std::string MandelbrotSection::getSavePath(){ return _savePath; }
 double MandelbrotSection::getRealStepMult(){ return _realStepMult; }
+std::streamsize MandelbrotSection::getPrecision(){ return _precision; }
 
 
 void MandelbrotSection::setReal(double r){
@@ -217,15 +219,16 @@ void MandelbrotSection::setReCalcOnChange(bool re){ _reCalcOnChange = re; }
 void MandelbrotSection::setLogging(bool l){ _logging = l; }
 void MandelbrotSection::setSavePath(const std::string &s){ _savePath = s; }
 void MandelbrotSection::setRealStepMult(double r){ _realStepMult = r; }
+void MandelbrotSection::setPrecision(std::streamsize p){ _precision = p; }
 
 MandelbrotSection::~MandelbrotSection() = default;
 
 void MandelbrotSection::_save(std::ostream &out){;  
     out << "!\n";
-    out << 'r' << Util::trimDouble(_start.real()) << '\n';
-    out << 'i' << Util::trimDouble(_start.imag()) << '\n';
-    out << "sr" << Util::trimDouble(_realStepMult) << '\n';
-    out << "si" << Util::trimDouble(_step) << '\n';
+    out << 'r' << Util::trimDouble(_start.real(), _precision) << '\n';
+    out << 'i' << Util::trimDouble(_start.imag(), _precision) << '\n';
+    out << "sr" << Util::trimDouble(_realStepMult, _precision) << '\n';
+    out << "si" << Util::trimDouble(_step, _precision) << '\n';
     out << 't' << _iterations << '\n';
     out << "[\n";
     for(auto &v : _raw){

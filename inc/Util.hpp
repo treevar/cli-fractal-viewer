@@ -4,6 +4,7 @@
 #include <vector>
 #include <utility>//std::pair
 namespace Util{
+
     bool isDouble(const std::string &str);
 
     bool inRange(std::string d, double min, double max);
