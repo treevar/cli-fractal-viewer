@@ -72,7 +72,7 @@ void MandelbrotSection::printInfo(std::ostream &out){
     out << "Imag(y): " << Util::trimDouble(_start.imag() - (_stepsI * _step)) << " < " << Util::trimDouble(_start.imag()) << 
     " > " << Util::trimDouble(_start.imag() + (_stepsI * _step)) << '\n';
     
-    out << "Real Step: " << Util::trimDouble(_step * _realStepMult) << '\n';
+    out << "Real Step: " << Util::trimDouble(_step * _realStepMult) << " (" << _realStepMult << "x)\n";
 
     out << "Imag Step: " << Util::trimDouble(_step) << '\n';
     
