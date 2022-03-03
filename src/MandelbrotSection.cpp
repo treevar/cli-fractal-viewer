@@ -50,7 +50,7 @@ std::ostream &operator<<(std::ostream &out, const MandelbrotSection &m){
         else{ std::cout << '|'; }
         for(int j = 0; j < realSize; j++){
             if(i == m._raw.size()/2 && j == realSize/2){ std::cout << char(178); }
-            else{ std::cout << (m._raw[i][j] ? ' ' : char(219)); }
+            else{ std::cout << (m._raw[i][j] ? ' ' : char(177)); }
         }
         std::cout << '\n';
     }
