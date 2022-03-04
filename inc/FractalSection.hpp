@@ -8,12 +8,10 @@
 #include <vector>
 #include <ostream>
 #include <string>
-#include <functional>
 class FractalSection{
     public:
         typedef std::vector<std::vector<char> > RawData;
         typedef std::complex<double> Point;
-        typedef std::function<char(const Point&, unsigned int)> Func;
         
         FractalSection();
         FractalSection(Point p);
@@ -50,7 +48,6 @@ class FractalSection{
         std::string getSavePath();
         double getRealStepMult();
         std::streamsize getPrecision();
-        Func getFunc();
 
         void setReal(double r);
         void setImag(double i);
@@ -61,28 +58,22 @@ class FractalSection{
         void setImagSteps(unsigned int is);
         void setReCalcOnChange(bool re);
         void setLogging(bool l);
-        void setSavePath(const std::string &s);
+        //void setSavePath(const std::string &s);
         void setRealStepMult(double r);
         void setPrecision(std::streamsize p);
-        void setFunc(Func f);
 
        ~FractalSection();
+    protected:
+        virtual char _func(Point, unsigned int iters) = 0;
+        std::string _savePath = "./saves/";
+
     private:
         RawData _raw;
         Point _start = {0, 0};
         double _step = 0.03, _realStepMult = 0.5;
         unsigned int _iterations = 255, _stepsR = 125, _stepsI = 35;
         bool _reCalcOnChange = false, _logging = true;
-        std::string _savePath = "./saves/";
         std::streamsize _precision = 15;
-        Func _func = [](const Point &c, unsigned int iters){
-            Point z = c;
-            for(unsigned int i = 0; i < iters; i++){
-                z = (z * z) + c;
-                if(std::abs(z) > 2.0){ return  char(177); } 
-            }
-            return ' ';
-        }; 
 
         void _save(std::ostream &out);
         bool _load(std::istream &in);
@@ -91,4 +82,15 @@ class FractalSection{
         bool _logIf(bool log, std::ostream &out, const std::string &str);
 };
 
+class MandelbrotSection : public FractalSection{
+    private:
+        char _func(Point p, unsigned int iters) override{
+            Point z{0, 0};
+            for(unsigned int i = 0; i < iters; i++){
+                z = (z * z) + p;
+                if(std::abs(z) > 2.0){ return static_cast<char>(177); }
+            }
+            return ' ';
+        }
+};
 #endif//FRACTAL_SECTION_HPP

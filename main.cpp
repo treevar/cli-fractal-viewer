@@ -16,7 +16,7 @@ const std::string DEFAULT_SECTION {"def.txt"};
 int main(){
     unsigned int iters = 255;
     //i.32, r.37
-    FractalSection m;
+    MandelbrotSection m;
     m.load(DEFAULT_SECTION);
     /*m.start.real(0);
     m.start.imag(0);

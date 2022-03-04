@@ -15,6 +15,7 @@ FractalSection::FractalSection(Point p) : _start(p) {}
 FractalSection::FractalSection(Point p, double step, unsigned int iterations, unsigned int stepsReal, unsigned int stepsImag) :
 _start(p), _step(step), _iterations(iterations), _stepsR(stepsReal), _stepsI(stepsImag)
 {}
+
 FractalSection::FractalSection(const FractalSection &other){
     *this = other;
 }
@@ -182,7 +183,6 @@ bool FractalSection::getLogging(){ return _logging; }
 std::string FractalSection::getSavePath(){ return _savePath; }
 double FractalSection::getRealStepMult(){ return _realStepMult; }
 std::streamsize FractalSection::getPrecision(){ return _precision; }
-FractalSection::Func FractalSection::getFunc(){ return _func; }
 
 
 void FractalSection::setReal(double r){
@@ -217,10 +217,9 @@ void FractalSection::setImagSteps(unsigned int is){
 }
 void FractalSection::setReCalcOnChange(bool re){ _reCalcOnChange = re; }
 void FractalSection::setLogging(bool l){ _logging = l; }
-void FractalSection::setSavePath(const std::string &s){ _savePath = s; }
+//void FractalSection::setSavePath(const std::string &s){ _savePath = s; }
 void FractalSection::setRealStepMult(double r){ _realStepMult = r; }
 void FractalSection::setPrecision(std::streamsize p){ _precision = p; }
-void FractalSection::setFunc(Func f){ _func = f; }
 
 FractalSection::~FractalSection() = default;
 
