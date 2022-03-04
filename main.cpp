@@ -29,6 +29,7 @@ int main(){
     do{
         op = Util::menuWithCheck({{"p", "Set Point"}, {"z", "Set Zoom"}, {"i", "Set iterations"}, {"rm", "Set Real Step Mult"}, 
                                 {"pr", "Set Precision of Floating Point Numbers"}, {"s", "Save"}, {"so", "Save and Overwrite"}, 
+                                {"sw", "Set viewer width in steps(chars)"}, {"sh", "Set viewer height in steps(chars)"},
                                 {"l", "Load"}, {"la", "Load Animation"}, {"a", "Make Animation"}, {"d", "Display"}, 
                                 {"di", "Display Info"}, {"dr", "Display Without Computing"}, {"q", "Quit"}});
         if(op == "p"){
@@ -57,6 +58,12 @@ int main(){
             if(m.save(fileName, true, std::ios::trunc)){
                 std::cout << "Saved to " << m.getSavePath() << fileName << "\n\n";
             }
+        }
+        else if(op == "sw"){
+            m.setRealSteps(Util::promptWithCheck("Enter steps: ", 1, 10000));
+        }
+        else if(op == "sh"){
+            m.setImagSteps(Util::promptWithCheck("Enter steps: ", 1, 10000));
         }
         else if(op == "l"){
             std::cout << "Enter Filename: ";
