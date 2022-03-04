@@ -8,7 +8,7 @@
 #include <vector>
 #include <sstream>
 #include <fstream>
-#include "inc/MandelbrotSection.hpp"
+#include "inc/FractalSection.hpp"
 #include "inc/Util.hpp"
 const unsigned int STEPS_X = 125, STEPS_Y = 35;
 const std::string DEFAULT_SECTION {"def.txt"}; 
@@ -16,7 +16,7 @@ const std::string DEFAULT_SECTION {"def.txt"};
 int main(){
     unsigned int iters = 255;
     //i.32, r.37
-    MandelbrotSection m;
+    FractalSection m;
     m.load(DEFAULT_SECTION);
     /*m.start.real(0);
     m.start.imag(0);
