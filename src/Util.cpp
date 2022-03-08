@@ -83,9 +83,9 @@ std::string Util::menuWithCheck(const Menu &v){
     return in;
 }
 
-std::string Util::getNextLine(){
+std::string Util::getNextLine(std::istream &in){
     std::string str;
-    std::getline(std::cin, str);
+    std::getline(in, str);
     return str;
 }
 

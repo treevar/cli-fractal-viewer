@@ -6,6 +6,7 @@
 #define UTIL_HPP
 #include <string>
 #include <vector>
+#include <iostream>
 #include <utility>//std::pair
 namespace Util{
 
@@ -22,7 +23,7 @@ namespace Util{
 
     std::string menuWithCheck(const Menu &v);
 
-    std::string getNextLine();
+    std::string getNextLine(std::istream &in = std::cin);
 
     void pause();
 

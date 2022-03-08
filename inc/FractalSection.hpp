@@ -8,10 +8,13 @@
 #include <vector>
 #include <ostream>
 #include <string>
-class FractalSection{
+#include "./Config.hpp"
+#include "./EventHandler.hpp"
+class FractalSection : public EventHandler{
     public:
         typedef std::vector<std::vector<char> > RawData;
         typedef std::complex<double> Point;
+
         
         FractalSection();
         FractalSection(Point p);
@@ -62,24 +65,25 @@ class FractalSection{
         void setRealStepMult(double r);
         void setPrecision(std::streamsize p);
 
-       ~FractalSection();
+       virtual ~FractalSection();
     protected:
         virtual char _func(Point, unsigned int iters) = 0;
-        std::string _savePath = "./saves/";
+        Config _defaultConfig, _defaultSettings{ Config::RawData {{"start.real", "0"}, {"start.imag", "0"}, 
+                                                                {"step", "0.03"}, {"iters", "1000"}}};
+        virtual void _loadConfig(const Config &c);
 
     private:
         RawData _raw;
-        Point _start = {0, 0};
-        double _step = 0.03, _realStepMult = 0.5;
-        unsigned int _iterations = 255, _stepsR = 125, _stepsI = 35;
-        bool _reCalcOnChange = false, _logging = true;
-        std::streamsize _precision = 15;
+        CallbackID _cfgCallbackID = 0, _settingsCallbackID = 0;
+        Config _cfg = _defaultConfig, _settings = _defaultSettings;
 
         void _save(std::ostream &out);
         bool _load(std::istream &in);
 
         void _log(std::ostream &out, const std::string &str);
         bool _logIf(bool log, std::ostream &out, const std::string &str);
+
+        void _registerCallbacks();
 };
 
 class MandelbrotSection : public FractalSection{
@@ -92,5 +96,9 @@ class MandelbrotSection : public FractalSection{
             }
             return ' ';
         }
+        Config FractalSection::_defaultConfig = Config::RawData {{"steps.real", "100"}, {"steps.imag", "25"}, 
+            {"savePath", "./saves/mandelbrot"},{"realStepMult", "0.5"}, {"reCalcOnChange", "0"}, {"logging", "1"}, 
+            {"precision", "15"}};
+
 };
 #endif//FRACTAL_SECTION_HPP
